@@ -1,0 +1,366 @@
+
+
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Product Identification & Chatbot</title>
+<style>
+  :root {
+    --primary: #2563eb;
+    --primary-light: #3b82f6;
+    --background: #b6e0fe; /* Slightly darker sky blue */
+    --surface: #ffffff;
+    --border: #93c5fd;
+    --radius: 18px;
+    --shadow: 0 6px 32px rgba(37,99,235,0.08), 0 2px 12px rgba(30,41,59,0.10);
+    --heading: #111827;
+  }
+
+  body {
+    font-family: 'Segoe UI', Arial, sans-serif;
+    background: var(--background);
+    color: #1e293b;
+    margin: 0;
+    padding: 0;
+    min-height: 100vh;
+  }
+
+  h2, h3 {
+    color: var(--heading);
+    text-align: center;
+    margin-bottom: 0.7em;
+    margin-top: 0.7em;
+    letter-spacing: 1px;
+  }
+  h2 {
+    font-size: 2.4rem;
+    font-weight: 800;
+  }
+  h3 {
+    font-size: 1.6rem;
+    font-weight: 700;
+  }
+
+  form {
+    background: var(--surface);
+    border-radius: var(--radius);
+    box-shadow: var(--shadow);
+    padding: 2.5em 2em;
+    margin: 2.5em auto 2em auto;
+    max-width: 600px;
+    min-width: 320px;
+    width: 90vw;
+    display: flex;
+    flex-direction: column;
+    gap: 1.3em;
+    align-items: center;
+    border: 2px solid var(--border);
+  }
+
+  input[type="file"] {
+    font-size: 1.15rem;
+    padding: 0.7em;
+    border: 2px solid var(--border);
+    border-radius: var(--radius);
+    background: #f0f9ff;
+    color: #374151;
+    width: 100%;
+    max-width: 350px;
+    transition: border-color 0.2s;
+  }
+  input[type="file"]:focus {
+    border-color: var(--primary-light);
+  }
+
+  button[type="submit"], #chatSend {
+    background: var(--primary);
+    color: #fff;
+    border: none;
+    border-radius: var(--radius);
+    padding: 0.9em 2.2em;
+    font-size: 1.08rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition: background 0.2s, transform 0.1s;
+    box-shadow: 0 2px 8px rgba(37,99,235,0.09);
+  }
+  button[type="submit"]:hover, #chatSend:hover {
+    background: var(--primary-light);
+    transform: translateY(-2px) scale(1.03);
+  }
+
+  #description {
+    background: var(--surface);
+    border-radius: var(--radius);
+    box-shadow: var(--shadow);
+    padding: 2.2em 2em;
+    margin: 2em auto 2em auto;
+    max-width: 700px;
+    min-width: 320px;
+    width: 90vw;
+    font-size: 1.18rem;
+    border: 2px solid var(--border);
+    color: #1e293b;
+  }
+
+  .results {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
+    gap: 1.7em;
+    max-width: 1000px;
+    margin: 2.5em auto 2em auto;
+    padding: 0 1em;
+  }
+
+  .results img {
+    width: 100%;
+    height: 180px;
+    object-fit: cover;
+    border-radius: var(--radius);
+    border: 3px solid transparent;
+    box-shadow: 0 2px 8px rgba(30,41,59,0.09);
+    cursor: pointer;
+    transition: border-color 0.3s, box-shadow 0.3s, transform 0.2s;
+    background: #f1f5f9;
+  }
+
+  .results img.selected {
+    border-color: var(--primary);
+    box-shadow: 0 0 0 5px rgba(37,99,235,0.13), 0 6px 20px rgba(37,99,235,0.10);
+    transform: scale(1.04);
+  }
+
+  .results img:hover {
+    box-shadow: 0 6px 20px rgba(37,99,235,0.13), 0 2px 8px rgba(30,41,59,0.10);
+    transform: scale(1.02);
+  }
+
+  .chatbox {
+    background: var(--surface);
+    border-radius: var(--radius);
+    box-shadow: var(--shadow);
+    padding: 2.2em 2em;
+    max-width: 700px;
+    min-width: 320px;
+    width: 90vw;
+    margin: 2.5em auto 2em auto;
+    border: 2px solid var(--border);
+  }
+
+  #chatInput {
+    width: 75%;
+    padding: 0.9em;
+    border: 2px solid var(--border);
+    border-radius: var(--radius);
+    font-size: 1.08rem;
+    margin-right: 0.7em;
+    background: #f0f9ff;
+    color: #374151;
+    outline: none;
+    transition: border-color 0.2s;
+  }
+  #chatInput:focus {
+    border-color: var(--primary-light);
+  }
+
+  #chatSend {
+    padding: 0.9em 1.7em;
+    margin-left: 0.2em;
+  }
+
+  #chatMessages {
+    margin-top: 2em;
+    border: 2px solid var(--border);
+    border-radius: var(--radius);
+    padding: 1.2em;
+    max-height: 320px;
+    overflow-y: auto;
+    background: #f8fafc;
+    box-shadow: 0 1px 4px rgba(30,41,59,0.07);
+  }
+
+  #chatMessages div {
+    margin-bottom: 1em;
+    padding: 0.9em 1.2em;
+    border-radius: 1em;
+    max-width: 80%;
+    word-break: break-word;
+    font-size: 1.08rem;
+  }
+  #chatMessages .user {
+    font-weight: bold;
+    background: var(--primary);
+    color: #fff;
+    margin-left: auto;
+    text-align: right;
+  }
+  #chatMessages .bot {
+    color: var(--primary);
+    background: #e0f2fe;
+    margin-right: auto;
+    text-align: left;
+    border: 1.5px solid var(--primary-light);
+  }
+
+  @media (max-width: 900px) {
+    .results {
+      grid-template-columns: repeat(auto-fill, minmax(140px, 1fr));
+      gap: 1em;
+    }
+    form, .chatbox, #description {
+      padding: 1em;
+      max-width: 98vw;
+      min-width: unset;
+    }
+    h2 { font-size: 2rem; }
+    h3 { font-size: 1.3rem; }
+  }
+</style>
+</head>
+<body>
+<h2>Upload Product Image</h2>
+<form method="POST" enctype="multipart/form-data">
+  <input type="file" name="image" accept="image/*" required />
+  <button type="submit">Upload</button>
+</form>
+
+{% if description %}
+  <h3>Description</h3>
+  <div id="description">{{ description }}</div>
+{% endif %}
+
+<div class="results" id="results">
+  {% for item in results %}
+    <img
+      src="{{ item.link }}"
+      alt="{{ item.title }}"
+      data-title="{{ item.title }}"
+      data-context="{{ item.contextLink }}"
+      title="{{ item.title }}"
+      draggable="false"
+    />
+  {% endfor %}
+</div>
+
+<div class="chatbox">
+  <h3>Chatbot</h3>
+  <input type="text" id="chatInput" placeholder="Type here and press enter..." />
+  <button id="chatSend">Send</button>
+  <div id="chatMessages"></div>
+</div>
+
+<script>
+  const resultsDiv = document.getElementById("results");
+  let selectedImg = null;
+
+  resultsDiv.addEventListener("click", (e) => {
+    if (e.target.tagName === "IMG") {
+      if (selectedImg) {
+        selectedImg.classList.remove("selected");
+      }
+      selectedImg = e.target;
+      selectedImg.classList.add("selected");
+    }
+  });
+
+  resultsDiv.addEventListener("dblclick", (e) => {
+    if (e.target.tagName === "IMG") {
+      const contextLink = e.target.getAttribute("data-context");
+      if (contextLink) {
+        window.open(contextLink, "_blank");
+      }
+    }
+  });
+
+  const chatInput = document.getElementById("chatInput");
+  const chatSend = document.getElementById("chatSend");
+  const chatMessages = document.getElementById("chatMessages");
+
+  function appendMessage(sender, text) {
+    const div = document.createElement("div");
+    div.className = sender;
+    div.textContent = (sender === "user" ? "You: " : "Bot: ") + text;
+    chatMessages.appendChild(div);
+    chatMessages.scrollTop = chatMessages.scrollHeight;
+  }
+
+  async function sendMessage() {
+    const message = chatInput.value.trim();
+    if (!message) return;
+    if (!selectedImg) {
+      alert("Please select a product image first.");
+      return;
+    }
+
+    appendMessage("user", message);
+    chatInput.value = "";
+
+    const img = selectedImg;
+    try {
+      const base64Data = await getBase64FromImageUrl(img.src);
+      const response = await fetch("/chat", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          message: message,
+          imageData: base64Data
+        })
+      });
+      const data = await response.json();
+
+      if (data.error) {
+        appendMessage("bot", `Error: ${data.error}`);
+        return;
+      }
+
+      appendMessage("bot", data.reply);
+
+      resultsDiv.innerHTML = "";
+      data.results.forEach(item => {
+        const newImg = document.createElement("img");
+        newImg.src = item.link;
+        newImg.alt = item.title;
+        newImg.title = item.title;
+        newImg.setAttribute("data-title", item.title);
+        newImg.setAttribute("data-context", item.contextLink);
+        newImg.draggable = false;
+        resultsDiv.appendChild(newImg);
+      });
+
+      selectedImg = null;
+    } catch (err) {
+      appendMessage("bot", "Failed to process the image.");
+    }
+  }
+
+  chatSend.addEventListener("click", sendMessage);
+  chatInput.addEventListener("keydown", (e) => {
+    if (e.key === "Enter") {
+      e.preventDefault();
+      sendMessage();
+    }
+  });
+
+  async function getBase64FromImageUrl(url) {
+    return new Promise((resolve, reject) => {
+      const img = new Image();
+      img.crossOrigin = "anonymous";
+      img.onload = () => {
+        const canvas = document.createElement("canvas");
+        canvas.width = img.width;
+        canvas.height = img.height;
+        const ctx = canvas.getContext("2d");
+        ctx.drawImage(img, 0, 0);
+        const dataURL = canvas.toDataURL("image/jpeg");
+        resolve(dataURL);
+      };
+      img.onerror = reject;
+      img.src = url;
+    });
+  }
+</script>
+</body>
+</html>
